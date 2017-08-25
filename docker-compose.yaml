@@ -1,0 +1,36 @@
+version: '2'
+services:
+
+  db:
+    image: mysql:latest # https://hub.docker.com/_/mysql/ - or mariadb https://hub.docker.com/_/mariadb
+    container_name: prestashop_db
+    ports:
+      - 127.0.0.1:3307:3376 # change ip if required
+    volumes:
+      # for init: comment after the first docker-compose up 
+      #- ./db-init:/docker-entrypoint-initdb.d
+      # - ./db-init:/docker-entrypoint-initdb.d
+      - ./db-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: prestashop
+      MYSQL_USER: docker
+      MYSQL_PASSWORD: docker     
+    restart: unless-stopped
+
+  prestashop:
+    image: prestashop/prestashop
+    container_name: prestashop_www
+    ports:
+      - 127.0.0.1:80:80 # change ip if required
+    volumes:
+      # sites directory: add the sources
+      - ./www:/var/www/html
+    environment:
+      DB_SERVER: "db:3306"
+      DB_USER: docker
+      DB_PASSWD: docker
+    depends_on:
+      - db
+    links:
+      - db:db 
